@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'homework1app',
-    'homework2_shop_app',
+    'hw_shop_app',
 ]
 
 MIDDLEWARE = [
@@ -166,3 +166,5 @@ LOGGING = {
     },
 },
 }
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'

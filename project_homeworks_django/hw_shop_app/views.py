@@ -1,10 +1,11 @@
 from django.shortcuts import render
 from django.http import HttpResponse
+from django.core.files.storage import FileSystemStorage
 import logging
 from datetime import datetime
 from datetime import timedelta
 from .models import Client, Product, Order
-from .forms import UpdateProductForm
+from .forms import UpdateProductForm, UploadProductImageForm
 
 # Create your views here.
 
@@ -12,7 +13,7 @@ logger = logging.getLogger()
 logging.basicConfig(level=logging.INFO, filename='logs/homework2-shop.log', filemode='a')
 
 
-def hw2_main(request):
+def hw_shop_main(request):
     return HttpResponse('Homework 2 -shop- main page')
 
 
@@ -37,10 +38,9 @@ def show_contacts_of_client(request):
 # — за последние 7 дней (неделю)
 # — за последние 30 дней (месяц)
 # — за последние 365 дней (год)
-# Товары в списке не должны повторятся.
+# Товары в списке не должны повторяться.
 
 def show_ordered_by_client_timesort(request, name, days):
-    print('show_ordered_by_client_timesort started')
     client_id = Client.objects.filter(client_name=name).first()
     orders = Order.objects.filter(client_id=client_id).all()
     res_set = set()
@@ -53,21 +53,23 @@ def show_ordered_by_client_timesort(request, name, days):
     context = {'days': days,
                'ordered': res_set,
                'name': name}
-    return render(request, 'homework2_shop_app/show_orders_of_client_timesort.html', context=context)
+    return render(request, "hw_shop_app/show_orders_of_client_timesort.html", context=context)
 
 # Домашнее задание 4:
 # Создайте форму для редактирования товаров в базе данных.
 
-def update_product_form(request,name):
+def update_product_form(request, pr_id):
     if request.method == 'POST':
         form = UpdateProductForm(request.POST)
         if form.is_valid():
+            product = Product.objects.filter(id=pr_id).first()
             product_name = form.cleaned_data['product_name']
-            product = Product.objects.filter(product_name=name).first()
-            description = form.cleaned_data['product_name']
-            price = form.cleaned_data['product_name']
-            quantity = form.cleaned_data['product_name']
-            date_of_addition = form.cleaned_data['product_name']
+            description = form.cleaned_data['description']
+            price = form.cleaned_data['price']
+            quantity = form.cleaned_data['quantity']
+            date_of_addition = form.cleaned_data['date_of_addition']
+            if product_name:
+                product.product_name = product_name
             if description:
                 product.description = description
             if price:
@@ -79,14 +81,37 @@ def update_product_form(request,name):
             product.save()
             return HttpResponse('<h2>Product updated.</h2>')
     else:
-        # pr_name = request.GET.get('pr_name')
-        product = Product.objects.filter(product_name=name).first()
+        product = Product.objects.filter(id=pr_id).first()
         if product:
             form = UpdateProductForm()
-            message = 'Enter information to update product. Be careful about product name!'
-            return render(request, 'homework2_shop_app/update_product_form.html', {'form': form, 'message': message})
+            message = 'Enter information to update product.'
+            return render(request,
+                          'hw_shop_app/update_product_form.html',
+                          {'form': form, 'message': message, 'product':product})
         else:
             return HttpResponse('<h2>Such product was not found.</h2>')
 
-def wtf_2(request):
-    return HttpResponse("wtf??")
+
+# Домашнее задание 4:
+# Измените модель продукта, добавьте поле для хранения фотографии продукта.
+# Создайте форму, которая позволит сохранять фото.
+
+def upload_product_image_form(request, pr_id):
+    if request.method == 'POST':
+        form = UploadProductImageForm(request.POST, request.FILES)
+        if form.is_valid():
+            product = Product.objects.filter(id=pr_id).first()
+            image = form.cleaned_data['image']
+            product.image = image
+            product.save()
+            return HttpResponse('<h2>Image uploaded.</h2>')
+    else:
+        product = Product.objects.filter(id=pr_id).first()
+        if product:
+            form = UploadProductImageForm()
+            message = f'Choose a picture for product {product.product_name}.'
+            return render(request,
+                          'hw_shop_app/upload_product_image_form.html',
+                          {'form': form, 'message': message, 'product':product})
+        else:
+            return HttpResponse('<h2>Such product was not found.</h2>')

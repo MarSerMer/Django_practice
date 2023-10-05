@@ -1,9 +1,11 @@
 import random
 
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 
 from django.http import HttpResponse
 import logging
+
+from .forms import ChooseGameForm
 
 # Create your views here.
 # Задание №1
@@ -76,3 +78,25 @@ def three(request, n: int):
         context['results']['Random_results: '].append(answer)
     context['results']['Random_results: '].sort()
     return render(request, 's3_templates_app/s3_t3_result.html', context=context)
+
+# Семинар 4 Задание №2
+# Доработаем задачу 1.
+# Создайте представление, которое выводит форму выбора.
+# В зависимости от переданных значений представление вызывает одно из трёх представлений, созданных на
+# прошлом семинаре (если данные прошли проверку, конечно же).
+
+def choose_game(request):
+    if request.method == 'POST':
+        form = ChooseGameForm(request.POST)
+        if form.is_valid():
+            game = form.cleaned_data['game']
+            n = form.cleaned_data['number']
+            if game == 'Drop_coin':
+                return redirect(f'/s3/one/{n}')
+            if game == 'Drop_cube':
+                return redirect(f'/s3/two/{n}')
+            if game == 'Random_number':
+                return redirect(f'/s3/three/{n}')
+    else:
+        form = ChooseGameForm()
+        return render(request, 's3_templates_app/s4_choose_game.html', {'form':form})

@@ -7,4 +7,6 @@ urlpatterns = [
     path('one/<int:n>', views.one, name='drop_coin'),
     path('two/<int:n>', views.two, name='drop_cube'),
     path('three/<int:n>', views.three, name='random_number'),
+    path('choose_game/', views.choose_game, name='choose_game'),
+
 ]
