@@ -28,6 +28,9 @@ class Client(models.Model):
         return f'Client: {self.client_name}, contacts: {self.phone}, {self.email}, {self.address}'
 
 
+    def __unicode__(self):
+        return self.client_name
+
 # Поля модели «Товар»:
 # — название товара
 # — описание товара
@@ -58,6 +61,9 @@ class Product(models.Model):
         return f'Product: {self.product_name}, {self.description}, ' \
                f'price: {self.price}, available from: {self.date_of_addition}, ' \
                f'pieces left: {self.quantity}'
+
+    def __unicode__(self):
+        return self.product_name
 
 
 # Поля модели «Заказ»:
